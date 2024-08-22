@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime
 import base64
 import aiohttp
@@ -20,13 +21,12 @@ class DtonError(BaseException):
 
 async def process_response(response: aiohttp.ClientResponse):
     try:
-        response_dict = await response.json()
+        response_dict: dict = await response.json()
     except Exception:
         raise DtonError(f'Failed to parse response: {response.text}')
-    if response.status != 200:
-        raise DtonError(f'dton failed with error: {response_dict}')
-    else:
-        return response_dict
+    if response_dict.get('errors'):
+        logging.warning(f"DTon return errors: {response_dict['errors']}")
+    return response_dict
 
 
 class DtonClient:
